@@ -21,22 +21,19 @@ public class ThresholdMonitor {
   private double humidityThreshold;
 
   public Mono<Alarm> checkThreshold(SensorMeasurement measurement) {
-    return Mono.fromCallable(
-        () -> {
-          SensorType type = measurement.getSensorType();
-          double value = measurement.getValue();
-          double threshold = getThreshold(type);
+    SensorType type = measurement.getSensorType();
+    double value = measurement.getValue();
+    double threshold = getThreshold(type);
 
-          if (value > threshold) {
-            log.debug(
-                "Threshold exceeded: type={}, value={}, threshold={}", type, value, threshold);
+    if (value > threshold) {
+      log.debug("Threshold exceeded: type={}, value={}, threshold={}", type, value, threshold);
 
-            return new Alarm(
-                measurement.getSensorId(), type, value, threshold, measurement.getWarehouseId());
-          }
+      return Mono.just(
+          new Alarm(
+              measurement.getSensorId(), type, value, threshold, measurement.getWarehouseId()));
+    }
 
-          return null;
-        });
+    return Mono.empty();
   }
 
   private double getThreshold(SensorType type) {
